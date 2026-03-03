@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>斯诺克解球线路训练</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔴 斯诺克解球线路训练</h1>
+            <p class="subtitle">拖动球到任意位置，选择撞库次数，查看解球路线</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 球桌区域 -->
+            <div class="game-area">
+                <div class="table-container">
+                    <!-- 球袋 -->
+                    <div class="pocket pocket-top-left"></div>
+                    <div class="pocket pocket-top-right"></div>
+                    <div class="pocket pocket-middle-left"></div>
+                    <div class="pocket pocket-middle-right"></div>
+                    <div class="pocket pocket-bottom-left"></div>
+                    <div class="pocket pocket-bottom-right"></div>
+                    
+                    <canvas id="snookerTable"></canvas>
+                    <div id="whiteBall" class="ball white-ball" draggable="true">
+                        <span class="ball-label">白</span>
+                    </div>
+                    <div id="redBall" class="ball red-ball" draggable="true">
+                        <span class="ball-label">红</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制面板区域 -->
+            <div class="control-panel">
+                <div class="control-section">
+                    <h3>⚙️ 控制面板</h3>
+                    
+                    <div class="control-group">
+                        <label for="cushions">撞库次数：</label>
+                        <select id="cushions">
+                            <option value="1" selected>一库</option>
+                            <option value="2">二库</option>
+                            <option value="3">三库</option>
+                            <option value="4">四库</option>
+                            <option value="6">六库</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="directionMode">
+                            方向模式（6库）
+                        </label>
+                    </div>
+
+                    <div class="control-group" id="directionControls" style="display: none;">
+                        <label for="direction">发射角度（0-360°）：</label>
+                        <input type="range" id="direction" min="0" max="360" value="45" step="1">
+                        <span id="directionValue">45°</span>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showGrid">
+                            显示辅助网格
+                        </label>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="showAngles">
+                            显示角度信息
+                        </label>
+                    </div>
+
+                    <button id="calculateBtn" class="btn btn-primary">🎯 计算路线</button>
+                    <button id="resetBtn" class="btn btn-secondary">🔄 重置位置</button>
+                    <button id="clearBtn" class="btn btn-secondary">🗑️ 清除路线</button>
+                    
+                    <div class="control-group" style="margin-top: 20px;">
+                        <button id="addObstacleBtn" class="btn btn-secondary">➕ 添加障碍球</button>
+                        <button id="clearObstaclesBtn" class="btn btn-secondary">🗑️ 清除障碍球</button>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>📋 使用说明</h3>
+                    <ul class="instructions">
+                        <li>🔵 拖动白球到起始位置</li>
+                        <li>🔴 拖动红球到目标位置</li>
+                        <li>🟡 点击"添加障碍球"在球桌上添加障碍球</li>
+                        <li>🎯 选择撞库次数</li>
+                        <li>📐 点击"计算路线"查看解球路径</li>
+                        <li>💡 路线会自动避开障碍球</li>
+                    </ul>
+                </div>
+
+                <div class="stats-section">
+                    <h3>📊 路线信息</h3>
+                    <div id="pathInfo" class="path-info">
+                        <p>等待计算...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>由 <a href="https://with.woa.com/" style="color: #8A2BE2;" target="_blank">With</a> 通过自然语言生成</p>
+        </footer>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

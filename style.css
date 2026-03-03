@@ -1,0 +1,482 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: 
+        linear-gradient(rgba(15, 20, 30, 0.85), rgba(20, 25, 35, 0.9)),
+        #1a1f2e;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    padding: 20px 30px;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.header h1 {
+    font-size: 2rem;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    color: #8899aa;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    position: relative;
+}
+
+.control-panel {
+    width: 100%;
+    background: rgba(10, 14, 26, 0.98);
+    padding: 25px 30px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.control-section h3,
+.info-section h3,
+.stats-section h3 {
+    color: #ffffff;
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+}
+
+.control-group {
+    margin-bottom: 16px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: #aabbcc;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+.control-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    appearance: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+}
+
+.control-group select option {
+    background: #1a1f2e;
+    color: #fff;
+    padding: 8px;
+}
+
+.control-group select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.control-group input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.control-group input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+#directionValue {
+    display: inline-block;
+    margin-left: 10px;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.btn {
+    width: 100%;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #aabbcc;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.info-section,
+.stats-section {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.instructions {
+    list-style: none;
+    padding: 0;
+}
+
+.instructions li {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    font-size: 0.85rem;
+    color: #aabbcc;
+    transition: all 0.2s;
+}
+
+.instructions li:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(3px);
+}
+
+.path-info {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 14px;
+    border-radius: 6px;
+    min-height: 80px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.path-info p {
+    margin-bottom: 8px;
+    color: #aabbcc;
+    line-height: 1.6;
+    font-size: 0.85rem;
+}
+
+.game-area {
+    background: 
+        linear-gradient(rgba(20, 25, 35, 0.5), rgba(25, 30, 40, 0.6)),
+        #2a2f3e;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.table-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 2;
+    background: #0d7a4a;
+    outline: 20px solid #8B4513;
+    outline-offset: 0px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+/* 球袋样式 */
+.pocket {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: #000000;
+    border-radius: 50%;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    border: 2px solid #333;
+}
+
+.pocket::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    background: #000000;
+    border-radius: 50%;
+}
+
+/* 竖向球桌的球袋位置 */
+.pocket-top-left {
+    top: -20px;
+    left: -20px;
+}
+
+.pocket-top-right {
+    top: -20px;
+    right: -20px;
+}
+
+.pocket-middle-left {
+    left: -20px;
+    top: calc(50% - 20px);
+}
+
+.pocket-middle-right {
+    right: -20px;
+    top: calc(50% - 20px);
+}
+
+.pocket-bottom-left {
+    bottom: -20px;
+    left: -20px;
+}
+
+.pocket-bottom-right {
+    bottom: -20px;
+    right: -20px;
+}
+
+#snookerTable {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.ball {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.2s;
+    z-index: 50;
+    touch-action: none;
+    visibility: visible;
+    opacity: 1;
+}
+
+.ball:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+.ball:active {
+    cursor: grabbing;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.ball.dragging {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+    z-index: 100;
+    opacity: 0.95;
+}
+
+.white-ball {
+    background: #ffffff;
+    border: 2px solid #ccc;
+}
+
+.red-ball {
+    background: #dd0000;
+    border: 2px solid #990000;
+}
+
+.ball-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+    user-select: none;
+    pointer-events: none;
+}
+
+.red-ball .ball-label {
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.obstacle-ball {
+    background: #FFA500;
+    border: 2px solid #CC7000;
+}
+
+.obstacle-ball .ball-label {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    background: rgba(10, 14, 26, 0.95);
+    color: #6677889;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+}
+
+.footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.footer a:hover {
+    color: #8899ff;
+    text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+    .control-panel {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.85rem;
+    }
+
+    .control-panel {
+        padding: 20px 15px;
+        gap: 15px;
+    }
+    
+    .table-container {
+        border-width: 20px;
+    }
+    
+    .pocket {
+        width: 35px;
+        height: 35px;
+    }
+
+    .pocket::before {
+        width: 28px;
+        height: 28px;
+    }
+
+    .pocket-top-left {
+        top: -17px;
+        left: -17px;
+    }
+
+    .pocket-top-right {
+        top: -17px;
+        right: -17px;
+    }
+
+    .pocket-middle-left {
+        left: -17px;
+        top: calc(50% - 17px);
+    }
+
+    .pocket-middle-right {
+        right: -17px;
+        top: calc(50% - 17px);
+    }
+
+    .pocket-bottom-left {
+        bottom: -17px;
+        left: -17px;
+    }
+
+    .pocket-bottom-right {
+        bottom: -17px;
+        right: -17px;
+    }
+    
+    .ball {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .ball-label {
+        font-size: 12px;
+    }
+    
+    .game-area {
+        padding: 20px;
+        min-height: 400px;
+    }
+}
