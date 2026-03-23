@@ -9,6 +9,9 @@ class SnookerGame {
         this.whiteBall = document.getElementById('whiteBall');
         this.redBall = document.getElementById('redBall');
         
+        // 检测是否为移动端
+        this.isMobile = window.innerWidth <= 768;
+        
         // 传入回调函数，当球位置改变时重绘canvas
         this.ballManager = new BallManager(this.whiteBall, this.redBall, this.canvas, () => {
             this.onBallPositionChanged();
@@ -17,10 +20,18 @@ class SnookerGame {
         this.renderer = new CanvasRenderer(this.canvas, this.ctx);
         
         this.initEventListeners();
+        this.initMobilePanel();
         this.initCanvas();
         
         // 立即设置球的位置
         this.resetBalls();
+    }
+    
+    /**
+     * 获取当前球的CSS半径（移动端球更大）
+     */
+    getBallCSSRadius() {
+        return this.isMobile ? 14 : 12;
     }
     
     initCanvas() {
@@ -35,44 +46,87 @@ class SnookerGame {
         }, 100);
         
         // 监听窗口大小变化
+        let resizeTimer = null;
         window.addEventListener('resize', () => {
-            const container = this.canvas.parentElement;
-            const newRect = container.getBoundingClientRect();
-            const oldSize = this.renderer.getDisplaySize();
-            const oldWidth = oldSize.width;
-            const oldHeight = oldSize.height;
-            
-            const newPixelRatio = window.devicePixelRatio || 1;
-            this.renderer.setSize(newRect.width, newRect.height, newPixelRatio);
-            
-            if (oldWidth > 0 && oldHeight > 0) {
-                const scaleX = newRect.width / oldWidth;
-                const scaleY = newRect.height / oldHeight;
-                
-                const whiteLeft = parseFloat(this.whiteBall.style.left) || 0;
-                const whiteTop = parseFloat(this.whiteBall.style.top) || 0;
-                this.whiteBall.style.left = (whiteLeft * scaleX) + 'px';
-                this.whiteBall.style.top = (whiteTop * scaleY) + 'px';
-                
-                const redLeft = parseFloat(this.redBall.style.left) || 0;
-                const redTop = parseFloat(this.redBall.style.top) || 0;
-                this.redBall.style.left = (redLeft * scaleX) + 'px';
-                this.redBall.style.top = (redTop * scaleY) + 'px';
-                
-                const obstacleBalls = this.ballManager.obstacleBalls;
-                obstacleBalls.forEach(ball => {
-                    const left = parseFloat(ball.style.left) || 0;
-                    const top = parseFloat(ball.style.top) || 0;
-                    ball.style.left = (left * scaleX) + 'px';
-                    ball.style.top = (top * scaleY) + 'px';
-                });
-            }
-            
-            this.renderer.drawTable(this.getShowGrid());
-            if (this.currentPath) {
-                this.calculatePath();
-            }
+            // 防抖处理，避免频繁触发
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                this.handleResize();
+            }, 150);
         });
+
+        // 监听屏幕方向变化
+        if (window.screen && window.screen.orientation) {
+            window.screen.orientation.addEventListener('change', () => {
+                setTimeout(() => this.handleResize(), 300);
+            });
+        }
+    }
+
+    handleResize() {
+        const container = this.canvas.parentElement;
+        const newRect = container.getBoundingClientRect();
+        const oldSize = this.renderer.getDisplaySize();
+        const oldWidth = oldSize.width;
+        const oldHeight = oldSize.height;
+
+        // 记录旧方向
+        const wasVertical = oldHeight > oldWidth * 1.3;
+
+        // 更新移动端状态
+        this.isMobile = window.innerWidth <= 768;
+
+        const newPixelRatio = window.devicePixelRatio || 1;
+        this.renderer.setSize(newRect.width, newRect.height, newPixelRatio);
+
+        // 检查新方向
+        const isNowVertical = this.isVertical();
+        const orientationChanged = wasVertical !== isNowVertical;
+
+        if (oldWidth > 0 && oldHeight > 0) {
+            const ballRadius = this.getBallCSSRadius();
+            const oldBallRadius = 12; // 旧的默认半径
+
+            // 更新所有球的位置
+            const allBalls = [this.whiteBall, this.redBall, ...this.ballManager.obstacleBalls];
+
+            allBalls.forEach(ball => {
+                const left = parseFloat(ball.style.left) || 0;
+                const top = parseFloat(ball.style.top) || 0;
+                // 获取中心点在旧球桌中的相对比例
+                const relX = (left + oldBallRadius) / oldWidth;
+                const relY = (top + oldBallRadius) / oldHeight;
+
+                let newCenterX, newCenterY;
+
+                if (orientationChanged) {
+                    // 方向切换：X/Y互换
+                    // 横→竖：旧的X比例映射到新的Y比例，旧的Y比例映射到新的X比例
+                    // 竖→横：同理
+                    newCenterX = relY * newRect.width;
+                    newCenterY = relX * newRect.height;
+                } else {
+                    // 仅缩放
+                    newCenterX = relX * newRect.width;
+                    newCenterY = relY * newRect.height;
+                }
+
+                // 限制在球桌范围内
+                newCenterX = Math.max(ballRadius, Math.min(newCenterX, newRect.width - ballRadius));
+                newCenterY = Math.max(ballRadius, Math.min(newCenterY, newRect.height - ballRadius));
+
+                ball.style.left = (newCenterX - ballRadius) + 'px';
+                ball.style.top = (newCenterY - ballRadius) + 'px';
+            });
+
+            // 更新ballManager的球半径
+            this.ballManager.updateBallRadius(ballRadius);
+        }
+
+        this.renderer.drawTable(this.getShowGrid());
+        if (this.currentPath) {
+            this.calculatePath();
+        }
     }
     
     initEventListeners() {
@@ -128,6 +182,47 @@ class SnookerGame {
         document.getElementById('clearObstaclesBtn').addEventListener('click', () => {
             this.clearObstacleBalls();
         });
+
+        // 移动端快捷按钮
+        const mobileCalcBtn = document.getElementById('mobileCalculateBtn');
+        if (mobileCalcBtn) {
+            mobileCalcBtn.addEventListener('click', () => {
+                this.calculatePath();
+            });
+        }
+    }
+
+    /**
+     * 初始化移动端面板折叠交互
+     */
+    initMobilePanel() {
+        const panelHeader = document.getElementById('panelHeaderMobile');
+        const panelBody = document.getElementById('panelBody');
+        const toggleBtn = document.getElementById('mobileTogglePanelBtn');
+
+        if (panelHeader && panelBody) {
+            panelHeader.addEventListener('click', () => {
+                const isExpanded = panelBody.classList.contains('expanded');
+                panelBody.classList.toggle('expanded');
+                panelHeader.classList.toggle('expanded');
+            });
+        }
+
+        // "设置"按钮打开/关闭面板
+        if (toggleBtn && panelBody && panelHeader) {
+            toggleBtn.addEventListener('click', () => {
+                const isExpanded = panelBody.classList.contains('expanded');
+                panelBody.classList.toggle('expanded');
+                panelHeader.classList.toggle('expanded');
+
+                // 滚动到面板位置
+                if (!isExpanded) {
+                    setTimeout(() => {
+                        document.getElementById('controlPanel').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            });
+        }
     }
     
     getShowGrid() {
@@ -142,27 +237,52 @@ class SnookerGame {
         return parseInt(document.getElementById('cushions').value);
     }
     
+    /**
+     * 判断是否为竖排模式
+     */
+    isVertical() {
+        return this.renderer.isVertical();
+    }
+
     resetBalls() {
         const size = this.renderer.getDisplaySize();
         const width = size.width;
         const height = size.height;
-        const ballRadius = 11;
+        const ballRadius = this.getBallCSSRadius();
         
         if (!width || !height) {
             return;
         }
-        
-        const blueX = width * 0.5;
-        const blueY = height / 2;
-        const whiteX = blueX - width * 0.05;
-        this.whiteBall.style.left = (whiteX - ballRadius) + 'px';
-        this.whiteBall.style.top = (blueY - ballRadius) + 'px';
-        
-        const pinkX = width * 0.755;
-        const pinkY = height / 2;
-        const redX = pinkX - width * 0.08;
-        this.redBall.style.left = (redX - ballRadius) + 'px';
-        this.redBall.style.top = (pinkY - ballRadius) + 'px';
+
+        if (this.isVertical()) {
+            // 竖排模式：长轴为Y，横排的X比例→竖排的Y比例
+            const centerX = width / 2;
+
+            // 白球：蓝球点位附近偏上
+            const blueY = height * 0.5;
+            const whiteY = blueY - height * 0.05;
+            this.whiteBall.style.left = (centerX - ballRadius) + 'px';
+            this.whiteBall.style.top = (whiteY - ballRadius) + 'px';
+
+            // 红球：粉球点位附近偏下
+            const pinkY = height * 0.755;
+            const redY = pinkY - height * 0.08;
+            this.redBall.style.left = (centerX - ballRadius) + 'px';
+            this.redBall.style.top = (redY - ballRadius) + 'px';
+        } else {
+            // 横排模式（原逻辑）
+            const blueX = width * 0.5;
+            const blueY = height / 2;
+            const whiteX = blueX - width * 0.05;
+            this.whiteBall.style.left = (whiteX - ballRadius) + 'px';
+            this.whiteBall.style.top = (blueY - ballRadius) + 'px';
+
+            const pinkX = width * 0.755;
+            const pinkY = height / 2;
+            const redX = pinkX - width * 0.08;
+            this.redBall.style.left = (redX - ballRadius) + 'px';
+            this.redBall.style.top = (pinkY - ballRadius) + 'px';
+        }
         
         this.currentPath = null;
         document.getElementById('pathInfo').innerHTML = '<p>等待计算...</p>';
@@ -288,6 +408,17 @@ class SnookerGame {
     }
     
     getSideName(side) {
+        if (this.isVertical()) {
+            // 竖排：top是短边（上方baulk端），bottom是短边（下方黑球端）
+            // left/right 是长边
+            const names = {
+                'top': '顶库(A)',
+                'bottom': '底库(B)',
+                'left': '左侧库',
+                'right': '右侧库'
+            };
+            return names[side] || side;
+        }
         const names = {
             'top': '上侧库',
             'bottom': '下侧库',

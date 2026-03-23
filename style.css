@@ -10,8 +10,10 @@ body {
         linear-gradient(rgba(15, 20, 30, 0.85), rgba(20, 25, 35, 0.9)),
         #1a1f2e;
     min-height: 100vh;
+    min-height: 100dvh; /* 动态视口高度，适配移动端地址栏 */
     padding: 0;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
 }
 
 .container {
@@ -20,6 +22,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .header {
@@ -54,15 +57,71 @@ body {
     position: relative;
 }
 
+/* ===== 球桌区域 ===== */
+.game-area {
+    background: 
+        linear-gradient(rgba(20, 25, 35, 0.5), rgba(25, 30, 40, 0.6)),
+        #2a2f3e;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.table-container {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    aspect-ratio: 2 / 1;
+    background: #0d7a4a;
+    outline: 20px solid #8B4513;
+    outline-offset: 0px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+#snookerTable {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* ===== 移动端快捷操作栏（仅移动端显示） ===== */
+.mobile-quick-bar {
+    display: none;
+}
+
+/* ===== 控制面板 ===== */
 .control-panel {
     width: 100%;
     background: rgba(10, 14, 26, 0.98);
     padding: 25px 30px;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-body {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
+}
+
+/* 桌面端隐藏移动端面板头 */
+.panel-header-mobile {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
 }
 
 .control-section h3,
@@ -138,8 +197,15 @@ body {
     font-size: 0.95rem;
 }
 
+/* ===== 按钮组 ===== */
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
 .btn {
-    width: 100%;
     padding: 11px 16px;
     border: none;
     border-radius: 6px;
@@ -147,9 +213,12 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 10px;
     position: relative;
     overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .btn-primary {
@@ -181,9 +250,8 @@ body {
 
 .info-section,
 .stats-section {
-    margin-top: 25px;
-    padding-top: 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .instructions {
@@ -222,188 +290,79 @@ body {
     font-size: 0.85rem;
 }
 
-.game-area {
-    background: 
-        linear-gradient(rgba(20, 25, 35, 0.5), rgba(25, 30, 40, 0.6)),
-        #2a2f3e;
-    padding: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    min-height: 600px;
-}
-
-.table-container {
-    position: relative;
-    width: 100%;
-    max-width: 960px;
-    margin: 0 auto;
-    aspect-ratio: 2 / 1;
-    background: 
-        radial-gradient(ellipse at 30% 40%, rgba(20, 140, 80, 0.3) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 60%, rgba(10, 100, 60, 0.2) 0%, transparent 50%),
-        linear-gradient(135deg, #0a7a4a 0%, #0d8050 25%, #0b7548 50%, #098040 75%, #0a7a4a 100%);
-    border-radius: 6px;
-    box-shadow: 
-        inset 0 0 40px rgba(0, 0, 0, 0.15),
-        inset 0 0 80px rgba(0, 0, 0, 0.08),
-        0 0 0 4px #5a3a1a,
-        0 0 0 6px #8B6914,
-        0 0 0 20px #6B4226,
-        0 0 0 22px #4a2c12,
-        0 0 0 24px rgba(0, 0, 0, 0.5),
-        0 8px 30px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-    box-sizing: border-box;
-}
-
-/* 球袋样式已移至Canvas绘制 */
-
-#snookerTable {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
-}
-
+/* ===== 球 ===== */
 .ball {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    cursor: grab;
+    cursor: move;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: box-shadow 0.25s ease, transform 0.2s ease, filter 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.2s;
     z-index: 50;
     touch-action: none;
     visibility: visible;
     opacity: 1;
 }
 
-.ball::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 4px;
-    width: 8px;
-    height: 5px;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
-    pointer-events: none;
-}
-
 .ball:hover {
-    transform: scale(1.15);
-    filter: brightness(1.1);
-    cursor: grab;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
 }
 
 .ball:active {
     cursor: grabbing;
-    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .ball.dragging {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
     z-index: 100;
-    transform: scale(1.2);
-    filter: brightness(1.15);
+    opacity: 0.95;
 }
 
 .white-ball {
-    background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f0f0f0 40%, #d8d8d8 70%, #b8b8b8 100%);
-    border: 1.5px solid rgba(180, 180, 180, 0.6);
-    box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.4),
-        0 0 12px rgba(255, 255, 255, 0.3),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.white-ball:hover {
-    box-shadow:
-        0 3px 10px rgba(0, 0, 0, 0.5),
-        0 0 18px rgba(255, 255, 255, 0.5),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.15);
-}
-
-.white-ball.dragging {
-    box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.6),
-        0 0 24px rgba(255, 255, 255, 0.6),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+    border: 2px solid #ccc;
 }
 
 .red-ball {
-    background: radial-gradient(circle at 35% 30%, #ff4444 0%, #dd0000 40%, #bb0000 70%, #880000 100%);
-    border: 1.5px solid rgba(100, 0, 0, 0.5);
-    box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.4),
-        0 0 10px rgba(255, 0, 0, 0.25),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.25);
-}
-
-.red-ball:hover {
-    box-shadow:
-        0 3px 10px rgba(0, 0, 0, 0.5),
-        0 0 16px rgba(255, 0, 0, 0.4),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.25);
-}
-
-.red-ball.dragging {
-    box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.6),
-        0 0 22px rgba(255, 0, 0, 0.5),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+    background: #dd0000;
+    border: 2px solid #990000;
 }
 
 .ball-label {
-    font-size: 9px;
-    font-weight: 700;
-    color: rgba(50, 50, 50, 0.85);
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
     user-select: none;
     pointer-events: none;
-    letter-spacing: 0.5px;
-    position: relative;
-    z-index: 1;
 }
 
 .red-ball .ball-label {
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .obstacle-ball {
-    background: radial-gradient(circle at 35% 30%, #ffcc44 0%, #FFA500 40%, #dd8800 70%, #aa6600 100%);
-    border: 1.5px solid rgba(150, 80, 0, 0.5);
-    box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.4),
-        0 0 10px rgba(255, 165, 0, 0.25),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.2);
-}
-
-.obstacle-ball:hover {
-    box-shadow:
-        0 3px 10px rgba(0, 0, 0, 0.5),
-        0 0 16px rgba(255, 165, 0, 0.4),
-        inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+    background: #FFA500;
+    border: 2px solid #CC7000;
 }
 
 .obstacle-ball .ball-label {
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* ===== 页脚 ===== */
 .footer {
     text-align: center;
     padding: 15px;
     background: rgba(10, 14, 26, 0.95);
-    color: #6677889;
+    color: #667788;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 0.85rem;
 }
@@ -420,42 +379,292 @@ body {
     text-decoration: underline;
 }
 
+/* =============================================
+   平板端适配 (<=1200px)
+   ============================================= */
 @media (max-width: 1200px) {
-    .control-panel {
+    .panel-body {
         grid-template-columns: 1fr;
         gap: 20px;
     }
 }
 
+/* =============================================
+   手机端适配 (<=768px)
+   ============================================= */
 @media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    /* --- 头部精简 --- */
+    .header {
+        padding: 12px 16px;
+    }
+
     .header h1 {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
+        letter-spacing: 1px;
     }
     
     .subtitle {
+        font-size: 0.78rem;
+        display: none; /* 移动端隐藏副标题，节省空间 */
+    }
+
+    /* --- 球桌区域自适应 --- */
+    .game-area {
+        padding: 12px 8px;
+        min-height: auto;
+        flex: 1;
+        align-items: flex-start;
+    }
+
+    .table-container {
+        max-width: 100%;
+        outline-width: 10px;
+        /* 手机竖屏：球桌竖排 1:2 */
+        aspect-ratio: 1 / 2;
+    }
+
+    /* --- 球在移动端增大触摸区域 --- */
+    .ball {
+        width: 28px;
+        height: 28px;
+    }
+
+    .ball::after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border-radius: 50%;
+    }
+
+    .ball-label {
+        font-size: 11px;
+    }
+
+    /* --- 移动端快捷操作栏 --- */
+    .mobile-quick-bar {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        background: rgba(10, 14, 26, 0.98);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        position: sticky;
+        bottom: 0;
+        z-index: 200;
+    }
+
+    .btn-mobile {
+        flex: 1;
+        padding: 12px 10px;
+        font-size: 0.95rem;
+        border-radius: 8px;
+    }
+
+    /* --- 控制面板可折叠 --- */
+    .control-panel {
+        padding: 0;
+        border-top: none;
+    }
+
+    .panel-header-mobile {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        cursor: pointer;
+        background: rgba(15, 20, 35, 0.98);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .panel-header-mobile h3 {
+        color: #ffffff;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .panel-toggle-icon {
+        color: #aabbcc;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+    }
+
+    .panel-header-mobile.expanded .panel-toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .panel-body {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 16px 16px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.35s ease;
+    }
+
+    .panel-body.expanded {
+        max-height: 2000px;
+        padding: 16px;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    /* --- 按钮组在移动端 --- */
+    .btn-group {
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 10px 8px;
         font-size: 0.85rem;
     }
 
-    .control-panel {
-        padding: 20px 15px;
-        gap: 15px;
+    .control-section h3,
+    .info-section h3,
+    .stats-section h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
     }
-    
+
+    .control-group {
+        margin-bottom: 12px;
+    }
+
+    .control-group select {
+        padding: 10px 12px;
+        font-size: 1rem; /* 移动端select字号更大便于操作 */
+    }
+
+    .control-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    .control-group label {
+        font-size: 0.92rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .instructions li {
+        padding: 8px 10px;
+        margin-bottom: 6px;
+        font-size: 0.82rem;
+    }
+
+    .path-info {
+        padding: 12px;
+        min-height: 60px;
+    }
+
+    .path-info p {
+        font-size: 0.82rem;
+    }
+
+    /* --- 页脚 --- */
+    .footer {
+        padding: 12px;
+        font-size: 0.8rem;
+    }
+
+    /* --- 信息和统计区不需要额外边框 --- */
+    .info-section,
+    .stats-section {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 16px;
+    }
+}
+
+/* =============================================
+   超小屏手机适配 (<=420px)
+   ============================================= */
+@media (max-width: 420px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+
+    .game-area {
+        padding: 8px 4px;
+    }
+
     .table-container {
-        border-width: 20px;
+        outline-width: 8px;
+        aspect-ratio: 1 / 2;
     }
 
     .ball {
-        width: 22px;
-        height: 22px;
+        width: 26px;
+        height: 26px;
     }
-    
-    .ball-label {
-        font-size: 9px;
+
+    .btn-mobile {
+        padding: 11px 8px;
+        font-size: 0.88rem;
     }
-    
+
+    .btn {
+        padding: 9px 6px;
+        font-size: 0.82rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+    }
+}
+
+/* =============================================
+   横屏手机适配
+   ============================================= */
+@media (max-width: 900px) and (orientation: landscape) {
+    .header {
+        padding: 6px 16px;
+    }
+
+    .header h1 {
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    .subtitle {
+        display: none;
+    }
+
     .game-area {
-        padding: 20px;
-        min-height: 400px;
+        padding: 8px;
+        min-height: auto;
+    }
+
+    .table-container {
+        max-width: 80%;
+        outline-width: 10px;
+    }
+
+    .mobile-quick-bar {
+        display: flex;
+        padding: 6px 12px;
+    }
+
+    .btn-mobile {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .footer {
+        padding: 6px;
+        font-size: 0.75rem;
     }
 }

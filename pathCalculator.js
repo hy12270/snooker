@@ -3,15 +3,33 @@ export class PathCalculator {
         // 斯诺克球直径为52.5mm，这里使用像素表示
         this.ballRadius = 11; // 半径11像素（直径22px）
         
-        // 球袋位置（相对于球桌的比例）- 横向球桌
-        this.pockets = [
-            { x: 0, y: 0, radius: 0.03 },           // 左上角
-            { x: 1, y: 0, radius: 0.03 },           // 右上角
-            { x: 0.5, y: 0, radius: 0.025 },        // 上中
-            { x: 0.5, y: 1, radius: 0.025 },        // 下中
-            { x: 0, y: 1, radius: 0.03 },           // 左下角
-            { x: 1, y: 1, radius: 0.03 }            // 右下角
+        // 球袋位置（相对于球桌的比例）
+        // 横向球桌：中袋在上下
+        this.pocketsHorizontal = [
+            { x: 0, y: 0, radius: 0.03 },
+            { x: 1, y: 0, radius: 0.03 },
+            { x: 0.5, y: 0, radius: 0.025 },
+            { x: 0.5, y: 1, radius: 0.025 },
+            { x: 0, y: 1, radius: 0.03 },
+            { x: 1, y: 1, radius: 0.03 }
         ];
+        // 竖向球桌：中袋在左右
+        this.pocketsVertical = [
+            { x: 0, y: 0, radius: 0.03 },
+            { x: 1, y: 0, radius: 0.03 },
+            { x: 0, y: 0.5, radius: 0.025 },
+            { x: 1, y: 0.5, radius: 0.025 },
+            { x: 0, y: 1, radius: 0.03 },
+            { x: 1, y: 1, radius: 0.03 }
+        ];
+    }
+
+    /**
+     * 获取当前球袋位置（根据球桌方向）
+     */
+    getPockets(tableWidth, tableHeight) {
+        const isVertical = tableHeight > tableWidth * 1.3;
+        return isVertical ? this.pocketsVertical : this.pocketsHorizontal;
     }
     
     /**
@@ -273,7 +291,8 @@ export class PathCalculator {
     
     isNearPocket(point, tableWidth, tableHeight) {
         const threshold = Math.min(tableWidth, tableHeight) * 0.04;
-        for (const pocket of this.pockets) {
+        const pockets = this.getPockets(tableWidth, tableHeight);
+        for (const pocket of pockets) {
             const px = pocket.x * tableWidth;
             const py = pocket.y * tableHeight;
             const dist = Math.sqrt((point.x - px) ** 2 + (point.y - py) ** 2);
@@ -356,9 +375,10 @@ export class PathCalculator {
     pathIntersectsPockets(pathPoints, tableWidth, tableHeight) {
         if (!pathPoints || pathPoints.length < 2) return false;
         const pocketSafeDistance = Math.min(tableWidth, tableHeight) * 0.035;
+        const pockets = this.getPockets(tableWidth, tableHeight);
         
         for (let i = 0; i < pathPoints.length - 1; i++) {
-            for (const pocket of this.pockets) {
+            for (const pocket of pockets) {
                 const pocketPos = { x: pocket.x * tableWidth, y: pocket.y * tableHeight };
                 const dist = this.pointToSegmentDistance(pocketPos, pathPoints[i], pathPoints[i + 1]);
                 if (dist < pocketSafeDistance) return true;

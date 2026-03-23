@@ -27,6 +27,13 @@ export class CanvasRenderer {
             height: this.displayHeight
         };
     }
+
+    /**
+     * 判断当前球桌是否为竖排模式（手机竖屏）
+     */
+    isVertical() {
+        return this.displayHeight > this.displayWidth * 1.3;
+    }
     
     clear() {
         const ctx = this.ctx;
@@ -109,7 +116,7 @@ export class CanvasRenderer {
     }
     
     /**
-     * 绘制球袋 - 横向球桌
+     * 绘制球袋 - 支持横向/竖向球桌
      */
     drawPockets() {
         const ctx = this.ctx;
@@ -119,15 +126,21 @@ export class CanvasRenderer {
         const midR = Math.min(width, height) * 0.034;
         const cornerOffset = cornerR * 0.35;
         
-        // 四个角袋
+        // 四个角袋（两种方向都一样）
         this.drawPocketCircle(cornerOffset, cornerOffset, cornerR);
         this.drawPocketCircle(width - cornerOffset, cornerOffset, cornerR);
         this.drawPocketCircle(cornerOffset, height - cornerOffset, cornerR);
         this.drawPocketCircle(width - cornerOffset, height - cornerOffset, cornerR);
         
-        // 两个中袋
-        this.drawPocketCircle(width / 2, 0, midR);
-        this.drawPocketCircle(width / 2, height, midR);
+        if (this.isVertical()) {
+            // 竖排：中袋在左右两侧中点
+            this.drawPocketCircle(0, height / 2, midR);
+            this.drawPocketCircle(width, height / 2, midR);
+        } else {
+            // 横排：中袋在上下两侧中点
+            this.drawPocketCircle(width / 2, 0, midR);
+            this.drawPocketCircle(width / 2, height, midR);
+        }
     }
     
     drawPocketCircle(cx, cy, radius) {
@@ -199,19 +212,34 @@ export class CanvasRenderer {
             ctx.stroke();
         }
         
-        // 中线稍明显
+        // 中线稍明显 - 长轴中线
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         ctx.lineWidth = 1;
         ctx.setLineDash([6, 4]);
-        ctx.beginPath();
-        ctx.moveTo(width / 2, 0);
-        ctx.lineTo(width / 2, height);
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(0, height / 2);
-        ctx.lineTo(width, height / 2);
-        ctx.stroke();
+
+        if (this.isVertical()) {
+            // 竖排：长轴为Y轴，中线为水平线
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+        } else {
+            // 横排：长轴为X轴，中线为竖线
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+        }
         ctx.setLineDash([]);
     }
     
@@ -220,58 +248,110 @@ export class CanvasRenderer {
     }
     
     /**
-     * 绘制斯诺克标记点 - 横向球桌
+     * 绘制斯诺克标记点 - 支持横向/竖向球桌
+     * 竖排时：原横向的左→右 变为 上→下
      */
     drawSnookerSpots() {
         const ctx = this.ctx;
         const { width, height } = this.getDisplaySize();
-        const centerY = height / 2;
-        
-        // 开球线（Baulk line）
-        const baulkLineX = width * 0.207;
-        
-        // 绘制开球线 - 稍微有光泽感
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.15)';
-        ctx.shadowBlur = 3;
-        ctx.beginPath();
-        ctx.moveTo(baulkLineX, 0);
-        ctx.lineTo(baulkLineX, height);
-        ctx.stroke();
-        ctx.restore();
-        
-        // D区半圆 - 带渐变描边效果
-        const dRadius = width * 0.0575;
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.12)';
-        ctx.shadowBlur = 3;
-        ctx.beginPath();
-        ctx.arc(baulkLineX, centerY, dRadius, -Math.PI / 2, Math.PI / 2, true);
-        ctx.stroke();
-        ctx.restore();
-        
-        // D区内部微微加深效果
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(baulkLineX, centerY, dRadius, -Math.PI / 2, Math.PI / 2, true);
-        ctx.lineTo(baulkLineX, centerY - dRadius);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 50, 30, 0.08)';
-        ctx.fill();
-        ctx.restore();
-        
-        const spotRadius = 6;
-        
-        this.drawSpot(baulkLineX, centerY, spotRadius, '棕', '#8B4513');
-        this.drawSpot(baulkLineX, centerY - dRadius, spotRadius, '绿', '#228B22');
-        this.drawSpot(baulkLineX, centerY + dRadius, spotRadius, '黄', '#FFD700');
-        this.drawSpot(width * 0.5, centerY, spotRadius, '蓝', '#4169E1');
-        this.drawSpot(width * 0.755, centerY, spotRadius, '粉', '#FF69B4');
-        this.drawSpot(width * 0.909, centerY, spotRadius, '黑', '#1a1a1a');
+        const vertical = this.isVertical();
+
+        if (vertical) {
+            // ===== 竖排模式 =====
+            const centerX = width / 2;
+
+            // 开球线（Baulk line）- 变为水平线，在球桌上部
+            const baulkLineY = height * 0.207;
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.15)';
+            ctx.shadowBlur = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, baulkLineY);
+            ctx.lineTo(width, baulkLineY);
+            ctx.stroke();
+            ctx.restore();
+
+            // D区半圆 - 从baulk线向上开口
+            const dRadius = height * 0.0575;
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.12)';
+            ctx.shadowBlur = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, baulkLineY, dRadius, 0, Math.PI, true);
+            ctx.stroke();
+            ctx.restore();
+
+            // D区内部微微加深
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, baulkLineY, dRadius, 0, Math.PI, true);
+            ctx.lineTo(centerX + dRadius, baulkLineY);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 50, 30, 0.08)';
+            ctx.fill();
+            ctx.restore();
+
+            const spotRadius = 6;
+
+            // 标记点：横排的X比例 → 竖排的Y比例，横排的Y偏移 → 竖排的X偏移
+            this.drawSpot(centerX, baulkLineY, spotRadius, '棕', '#8B4513');
+            this.drawSpot(centerX - dRadius, baulkLineY, spotRadius, '黄', '#FFD700');
+            this.drawSpot(centerX + dRadius, baulkLineY, spotRadius, '绿', '#228B22');
+            this.drawSpot(centerX, height * 0.5, spotRadius, '蓝', '#4169E1');
+            this.drawSpot(centerX, height * 0.755, spotRadius, '粉', '#FF69B4');
+            this.drawSpot(centerX, height * 0.909, spotRadius, '黑', '#1a1a1a');
+
+        } else {
+            // ===== 横排模式（原逻辑） =====
+            const centerY = height / 2;
+
+            const baulkLineX = width * 0.207;
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.15)';
+            ctx.shadowBlur = 3;
+            ctx.beginPath();
+            ctx.moveTo(baulkLineX, 0);
+            ctx.lineTo(baulkLineX, height);
+            ctx.stroke();
+            ctx.restore();
+
+            const dRadius = width * 0.0575;
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.12)';
+            ctx.shadowBlur = 3;
+            ctx.beginPath();
+            ctx.arc(baulkLineX, centerY, dRadius, -Math.PI / 2, Math.PI / 2, true);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(baulkLineX, centerY, dRadius, -Math.PI / 2, Math.PI / 2, true);
+            ctx.lineTo(baulkLineX, centerY - dRadius);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0, 50, 30, 0.08)';
+            ctx.fill();
+            ctx.restore();
+
+            const spotRadius = 6;
+
+            this.drawSpot(baulkLineX, centerY, spotRadius, '棕', '#8B4513');
+            this.drawSpot(baulkLineX, centerY - dRadius, spotRadius, '绿', '#228B22');
+            this.drawSpot(baulkLineX, centerY + dRadius, spotRadius, '黄', '#FFD700');
+            this.drawSpot(width * 0.5, centerY, spotRadius, '蓝', '#4169E1');
+            this.drawSpot(width * 0.755, centerY, spotRadius, '粉', '#FF69B4');
+            this.drawSpot(width * 0.909, centerY, spotRadius, '黑', '#1a1a1a');
+        }
     }
     
     drawSpot(x, y, radius, label, color) {
