@@ -30,10 +30,7 @@ class SnookerGame {
             const rect = container.getBoundingClientRect();
             const pixelRatio = window.devicePixelRatio || 1;
             
-            // 使用统一的渲染器接口设置尺寸和DPI缩放
             this.renderer.setSize(rect.width, rect.height, pixelRatio);
-            
-            // 立即绘制球桌和标记点
             this.renderer.drawTable(this.getShowGrid());
         }, 100);
         
@@ -46,28 +43,22 @@ class SnookerGame {
             const oldHeight = oldSize.height;
             
             const newPixelRatio = window.devicePixelRatio || 1;
-            
-            // 更新canvas尺寸（统一通过renderer）
             this.renderer.setSize(newRect.width, newRect.height, newPixelRatio);
             
-            // 按比例调整球的位置
             if (oldWidth > 0 && oldHeight > 0) {
                 const scaleX = newRect.width / oldWidth;
                 const scaleY = newRect.height / oldHeight;
                 
-                // 调整白球位置
                 const whiteLeft = parseFloat(this.whiteBall.style.left) || 0;
                 const whiteTop = parseFloat(this.whiteBall.style.top) || 0;
                 this.whiteBall.style.left = (whiteLeft * scaleX) + 'px';
                 this.whiteBall.style.top = (whiteTop * scaleY) + 'px';
                 
-                // 调整红球位置
                 const redLeft = parseFloat(this.redBall.style.left) || 0;
                 const redTop = parseFloat(this.redBall.style.top) || 0;
                 this.redBall.style.left = (redLeft * scaleX) + 'px';
                 this.redBall.style.top = (redTop * scaleY) + 'px';
                 
-                // 调整障碍球位置
                 const obstacleBalls = this.ballManager.obstacleBalls;
                 obstacleBalls.forEach(ball => {
                     const left = parseFloat(ball.style.left) || 0;
@@ -110,7 +101,6 @@ class SnookerGame {
         
         document.getElementById('cushions').addEventListener('change', (e) => {
             this.clearPath();
-            // 如果选择6库，自动启用方向模式
             if (e.target.value === '6') {
                 document.getElementById('directionMode').checked = true;
                 this.toggleDirectionMode(true);
@@ -153,54 +143,41 @@ class SnookerGame {
     }
     
     resetBalls() {
-        // 使用渲染器的显示尺寸（CSS 像素）
         const size = this.renderer.getDisplaySize();
         const width = size.width;
         const height = size.height;
-        const ballRadius = 12; // 球体半径（直径24px）
+        const ballRadius = 11;
         
         if (!width || !height) {
             return;
         }
         
-        // 竖向球桌：白球放在蓝球点位上方一点点
-        const blueX = width / 2;
+        const blueX = width * 0.5;
         const blueY = height / 2;
-        const whiteY = blueY - height * 0.05; // 蓝球上方约5%的距离
-        this.whiteBall.style.left = (blueX - ballRadius) + 'px';
-        this.whiteBall.style.top = (whiteY - ballRadius) + 'px';
+        const whiteX = blueX - width * 0.05;
+        this.whiteBall.style.left = (whiteX - ballRadius) + 'px';
+        this.whiteBall.style.top = (blueY - ballRadius) + 'px';
         
-        // 竖向球桌：红球放在粉球点位上方一点
-        const pinkX = width / 2;
-        const pinkY = height * 0.755; // 距离顶库75.5%
-        const redY = pinkY - height * 0.08; // 粉球上方约8%的距离
-        this.redBall.style.left = (pinkX - ballRadius) + 'px';
-        this.redBall.style.top = (redY - ballRadius) + 'px';
+        const pinkX = width * 0.755;
+        const pinkY = height / 2;
+        const redX = pinkX - width * 0.08;
+        this.redBall.style.left = (redX - ballRadius) + 'px';
+        this.redBall.style.top = (pinkY - ballRadius) + 'px';
         
-        // 清除路径数据和信息
         this.currentPath = null;
         document.getElementById('pathInfo').innerHTML = '<p>等待计算...</p>';
-        
-        // 立即重绘
         this.renderer.drawTable(this.getShowGrid());
     }
     
     clearPath() {
         this.currentPath = null;
         this.renderer.drawTable(this.getShowGrid());
-        // 注意：不在canvas上绘制障碍球，因为障碍球已经是DOM元素了
         document.getElementById('pathInfo').innerHTML = '<p>等待计算...</p>';
     }
     
-    /**
-     * 当球位置改变时的回调
-     */
     onBallPositionChanged() {
-        // 重绘canvas，包括标记点
-        // 注意：不在canvas上绘制障碍球，因为障碍球已经是DOM元素了
         this.renderer.drawTable(this.getShowGrid());
         
-        // 如果是方向模式，重绘方向指示器
         const directionMode = document.getElementById('directionMode').checked;
         if (directionMode) {
             const direction = parseInt(document.getElementById('direction').value);
@@ -208,41 +185,27 @@ class SnookerGame {
             this.renderer.drawDirectionIndicator(whitePos, direction);
         }
         
-        // 如果有当前路径，也重绘路径
         if (this.currentPath) {
             const showAngles = this.getShowAngles();
             this.renderer.drawPath(this.currentPath, showAngles);
         }
     }
     
-    /**
-     * 添加障碍球
-     */
     addObstacleBall() {
         const canvasRect = this.canvas.getBoundingClientRect();
-        // 在球桌中心附近随机位置添加障碍球
         const x = canvasRect.width * (0.3 + Math.random() * 0.4);
         const y = canvasRect.height * (0.3 + Math.random() * 0.4);
         
         this.ballManager.addObstacleBall(x, y);
-        
-        // 重绘canvas，包括标记点
-        // 注意：不在canvas上绘制障碍球，因为障碍球已经是DOM元素了
         this.renderer.drawTable(this.getShowGrid());
         
-        // 清除当前路径
         this.currentPath = null;
         document.getElementById('pathInfo').innerHTML = '<p>等待计算...</p>';
     }
     
-    /**
-     * 清除所有障碍球
-     */
     clearObstacleBalls() {
         this.ballManager.clearObstacleBalls();
-        // 重绘canvas，包括标记点
         this.renderer.drawTable(this.getShowGrid());
-        // 清除路径信息
         this.currentPath = null;
         document.getElementById('pathInfo').innerHTML = '<p>等待计算...</p>';
     }
@@ -257,7 +220,6 @@ class SnookerGame {
         const tableWidth = size.width;
         const tableHeight = size.height;
         
-        // 检查是否为方向模式
         const directionMode = document.getElementById('directionMode').checked;
         const direction = directionMode ? parseInt(document.getElementById('direction').value) : 0;
         
@@ -275,9 +237,6 @@ class SnookerGame {
         if (!this.currentPath) {
             document.getElementById('pathInfo').innerHTML = '<p style="color: #ff6b6b;">❌ 无法找到有效路径！<br/>请尝试：<br/>1. 调整球的位置<br/>2. 移除或调整障碍球<br/>3. 更改撞库次数<br/>4. 调整发射角度</p>';
             this.renderer.drawTable(this.getShowGrid());
-            // 重绘障碍球
-            const obstacleBalls2 = this.ballManager.getObstacleBallPositions();
-            this.renderer.drawObstacleBalls(obstacleBalls2);
             return;
         }
         
@@ -287,9 +246,6 @@ class SnookerGame {
     
     drawPath() {
         this.renderer.drawTable(this.getShowGrid());
-        
-        // 注意：不在canvas上绘制障碍球，因为障碍球已经是DOM元素了
-        
         if (!this.currentPath) return;
         
         const showAngles = this.getShowAngles();
@@ -313,10 +269,15 @@ class SnookerGame {
         html += `<p><strong>路径点数：</strong>${this.currentPath.points.length}个</p>`;
         
         if (this.currentPath.bouncePoints && this.currentPath.bouncePoints.length > 0) {
-            html += `<p><strong>反弹点：</strong></p>`;
-            this.currentPath.bouncePoints.forEach((point, index) => {
-                const side = this.getSideName(point.side);
-                html += `<p style="margin-left: 15px;">第${index + 1}次：${side}</p>`;
+            html += `<p style="margin-top: 8px;"><strong>反弹详情：</strong></p>`;
+            this.currentPath.bouncePoints.forEach((bounce, index) => {
+                const side = this.getSideName(bounce.side);
+                const incAngle = bounce.incidentAngle !== undefined ? bounce.incidentAngle.toFixed(1) : bounce.angle.toFixed(1);
+                
+                html += `<p style="margin-left: 15px; font-size: 0.85em;">`;
+                html += `第${index + 1}次 → ${side}`;
+                html += ` | 入射角 ${incAngle}°`;
+                html += `</p>`;
             });
         }
         
@@ -328,10 +289,10 @@ class SnookerGame {
     
     getSideName(side) {
         const names = {
-            'top': '顶库',
-            'bottom': '底库',
-            'left': '左库',
-            'right': '右库'
+            'top': '上侧库',
+            'bottom': '下侧库',
+            'left': '底库(A)',
+            'right': '顶库(B)'
         };
         return names[side] || side;
     }
@@ -350,9 +311,6 @@ class SnookerGame {
         return total;
     }
     
-    /**
-     * 切换方向模式
-     */
     toggleDirectionMode(enabled) {
         const directionControls = document.getElementById('directionControls');
         const cushionSelect = document.getElementById('cushions');
@@ -369,9 +327,6 @@ class SnookerGame {
         }
     }
     
-    /**
-     * 更新方向指示器
-     */
     updateDirectionIndicator() {
         const directionMode = document.getElementById('directionMode').checked;
         if (!directionMode) return;
@@ -379,26 +334,18 @@ class SnookerGame {
         const direction = parseInt(document.getElementById('direction').value);
         const whitePos = this.ballManager.getBallPosition(this.whiteBall);
         
-        // 重绘球桌
         this.renderer.drawTable(this.getShowGrid());
-        
-        // 绘制方向指示器
         this.renderer.drawDirectionIndicator(whitePos, direction);
         
-        // 如果有当前路径，也重绘路径
         if (this.currentPath) {
             const showAngles = this.getShowAngles();
             this.renderer.drawPath(this.currentPath, showAngles);
         }
     }
     
-    /**
-     * 重绘所有内容
-     */
     redrawAll() {
         this.renderer.drawTable(this.getShowGrid());
         
-        // 如果是方向模式，绘制方向指示器
         const directionMode = document.getElementById('directionMode').checked;
         if (directionMode) {
             const direction = parseInt(document.getElementById('direction').value);
@@ -406,7 +353,6 @@ class SnookerGame {
             this.renderer.drawDirectionIndicator(whitePos, direction);
         }
         
-        // 如果有当前路径，重绘路径
         if (this.currentPath) {
             const showAngles = this.getShowAngles();
             this.renderer.drawPath(this.currentPath, showAngles);
@@ -414,7 +360,6 @@ class SnookerGame {
     }
 }
 
-// 确保DOM完全加载后再初始化
 document.addEventListener('DOMContentLoaded', () => {
     const game = new SnookerGame();
 });
